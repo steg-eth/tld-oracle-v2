@@ -1,0 +1,6 @@
+
+# Reference clones, fetched on demand (see reference/README.md)
+reference/contracts-v2/
+reference/ens-contracts/
+reference/dnsprovejs/
+.DS_Store

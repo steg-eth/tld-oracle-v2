@@ -1,0 +1,7 @@
+# repo	ref	sha	mirror	note
+ensdomains/contracts-v2	refs/pull/465/head	5079ac1cba2635bce8840bb43645105c20a5cbc5	steg-eth/contracts-v2:pin/pr465-5079ac1c	#465 mainnet deployment records after the root registry redeploy; phase-8 handover
+ensdomains/contracts-v2	refs/pull/453/head	ed37923e02d0ab34c8264761bb7e8bfdd057b922	steg-eth/contracts-v2:pin/pr453-ed37923e	#453 DNSTLDResolver bump; waits on ens-contracts #572
+ensdomains/contracts-v2	refs/pull/419/head	3690d9492161384d04aa859354aabb4c81ccd43b	steg-eth/contracts-v2:pin/pr419-3690d94	#419 SET_SUBREGISTRY change; awaits maintainer reply
+ensdomains/ens-contracts	refs/pull/572/head	ebd1ce5be0bb1dc54bd47f08692f29fb0b674a98	steg-eth/ens-contracts:pin/pr572-ebd1ce5b	#572 DNSSECImpl redeploy and enableNode wiring for the root KSK rollover
+ensdomains/ens-contracts	refs/tags/v1.7.0	9b034936a42f462fc04bc0a929a419ede5e18d59	steg-eth/ens-contracts:pin/v1.7.0-9b034936	v1.7.0 ships #509, P-256 through the EIP-7951 precompile
+ensdomains/dnsprovejs	refs/tags/v1.0.1	797afc5a95b80ac0b603181d4a0ece63a41b2c49	steg-eth/dnsprovejs:v1.0.1	anchors: removes KSK 19036, adds KSK 38696
