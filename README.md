@@ -23,7 +23,7 @@ The TSG requires the operator to "provide all relevant control guarantees … su
 
 ## The v1 Oracle
 
-The v1 Oracle was built against ENSv1 on two parts that ENS already runs. It verifies proofs with an instance of the ENS DNSSEC oracle, `DNSSECImpl`, through its standard `verifyRRSet` call. It assigns the TLD as a controller of the ENS Root, with `setSubnodeOwner`. `DNSRegistrar` uses the same oracle and the same Root for second-level imports. The v1 Oracle stands beside it as a registrar for TLDs. It is not a fork of it. The assignment rules differ: a TLD-specific record at `_ens.nic.<tld>`, an allowlist, and a two-step assignment with a veto window. `DNSRegistrar` claims in one call. A live demo is at [dnssec.eketc.co/tld-oracle](https://dnssec.eketc.co/tld-oracle).
+The v1 Oracle was built against ENSv1 on two parts that ENS already runs. It verifies proofs with an instance of the ENS DNSSEC oracle, `DNSSECImpl`, through its standard `verifyRRSet` call. It assigns the TLD as a controller of the ENS Root, with `setSubnodeOwner`. `DNSRegistrar` uses the same oracle and the same Root for second-level imports. The v1 Oracle stands beside it as a registrar for TLDs. It is not a fork of it. The assignment rules differ: a TLD-specific record at `_ens.nic.<tld>`, an allowlist, and a two-step assignment with a veto window. `DNSRegistrar` claims in one call. A live demo is at [dnssec.eketc.co/tld-oracle](https://dnssec.steg.eth.link/tld-oracle/).
 
 The contracts, tests and demo are in `[steg-eth/dnssec-solutions](https://github.com/steg-eth/dnssec-solutions)` under `TLD-oracle/`, beside the DNSSEC demonstrations they grew out of (gasless resolution, on-chain import, DNS claiming). The Oracle was put to the DAO twice: the [RFC](https://discuss.ens.domains/t/rfc-a-programmable-fast-path-for-tld-assignment/21859) (January 2026) and the [Temp Check](https://discuss.ens.domains/t/temp-check-authorize-tldminter-as-root-controller/22020) (April–May). The Temp Check ended on a two-phase design: each assignment request commits a policy hash, and a review window gates execution.
 
@@ -46,7 +46,7 @@ Two test suites verify the v1 contract. Find them here: [dnssec-solutions/TLD-or
 - a proof older than 14 days fails;
 - the rate limit and the pause stop a request.
 
-Two more test files are in [dao-proposals](https://github.com/steg-eth/dao-proposals/tree/main/src/ens/proposals/tld-oracle), to be added under `reference/v1/proposal` in this repository.
+Two more test files come from the proposal package. Reference copies are in [`reference/v1/proposal`](reference/v1/proposal).
 
 `calldataCheck.t.sol` runs on a fork of Ethereum mainnet. It sends the real proposal calldata through the ENS Governor and Timelock. It then checks that:
 
