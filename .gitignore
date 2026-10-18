@@ -1,6 +1,15 @@
-
 # Reference clones, fetched on demand (see reference/README.md)
 reference/contracts-v2/
 reference/ens-contracts/
 reference/dnsprovejs/
+
 .DS_Store
+.claude/
+
+# Agent session transcripts and exports. This is a public repository: keep
+# them in the private workspace at survey/transcripts/ instead. The patterns
+# are shapes, not names, so a new transcript dropped here is ignored too.
+*session*.md
+*session*.txt
+*transcript*
+/*.txt
