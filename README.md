@@ -2,18 +2,7 @@
 
 <p align="center"><img src=".github/steggy-wip.gif" width="100%" alt="Steggy, the Steg mascot, holding a sign: WIP, spec coming soon"></p>
 
-## Verification
-
-**Chain claims verified 29 October 2026.** Every contract address in this document, and every
-statement it makes about on-chain state, was read from mainnet or Sepolia on that date: 24 assertions,
-all holding. Pull request states and merge dates were read from GitHub on the same date.
-
-Not re-read on that date: the ICANN TSG and ENS Foundation quotations, and the contract-source
-readings behind the Decisions. Those cite a commit or a document page, which is the date that applies
-to them.
-
-A dated claim in this file is a claim about that date. If you are reading it later, the chain is the
-authority and this document is a report about it.
+*Last updated 29 October 2026.*
 
 ## Design intent
 
