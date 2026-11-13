@@ -1,6 +1,7 @@
-# ens-contracts contracts/dnssec-oracle, pinned at a18fdc02e06e8005b23462387e26bd6f5db4b0f4
+# ens-contracts contracts/dnssec-oracle and its two utils dependencies, pinned at
+# a18fdc02e06e8005b23462387e26bd6f5db4b0f4
 # sha256 of the upstream blob. verify a build tree against this before trusting its tests.
-# generated 12 November 2026. 18 files.
+# generated 12 November 2026, extended to the compile closure 13 November 2026. 20 files.
 e09958f00fb722a20f13c9f681056569242a2eda5e50bdb09a7ccab169ac5659  contracts/dnssec-oracle/DNSSEC.sol
 0e67f8a979587c20f2c88c0692468bcfb67f49b7c0c4d50ab6817f3f76514ec9  contracts/dnssec-oracle/DNSSECImpl.sol
 28347c9f3637c242d07e61f74df1f8a5bb6bc7da3182b8594a27526afb30fe2e  contracts/dnssec-oracle/IDNSGateway.sol
@@ -19,3 +20,5 @@ ad70272a514d18b9b1cf7cde49462ac91f24f51f7217346e7c7b1cdf7eb3ac59  contracts/dnss
 19437875a9052b5cf0a05007eae2abd0b2fd2e1f1cba8316938426808fb5671c  contracts/dnssec-oracle/digests/DummyDigest.sol
 f051cc075c10f135f25299dc863f61b7a1e90fe6a31891e08c75a984ed4c6a60  contracts/dnssec-oracle/digests/SHA1Digest.sol
 ff00c8afae5ff53a8a46da6cba4bd19f53d00c50cee426484b4eb6816b0c326d  contracts/dnssec-oracle/digests/SHA256Digest.sol
+0cd3a4ac0b71f360b757fa31109801dca87341ff6419388df45eb600cd017304  contracts/utils/BytesUtils.sol
+d8d91518009cce4a639d46035d58cc11caa2aefcd80abf7c6c6dab14170b5839  contracts/utils/LibMem/LibMem.sol

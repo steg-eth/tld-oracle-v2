@@ -43,9 +43,9 @@ FOUNDRY_SRC=src forge test
 ```
 
 `verify-sources.sh` must exit 0. Any other exit means the test results from that tree mean nothing.
-The lock covers the 18 oracle files. The build also needs `contracts/utils/BytesUtils.sol` and
-`contracts/utils/LibMem/LibMem.sol`, which the oracle imports and the lock does not yet cover. Copy
-only those two. The rest of `contracts/utils` pulls in `ccipRead`, which this build does not use.
+The lock covers all 20 files the build compiles: the 18 oracle files, plus
+`contracts/utils/BytesUtils.sol` and `contracts/utils/LibMem/LibMem.sol`, which the oracle imports.
+Copy only those two. The rest of `contracts/utils` pulls in `ccipRead`, which this build does not use.
 
 `foundry.toml` sets `src = "empty"`, so `FOUNDRY_SRC=src` is required. `libs` points at
 `node_modules`, which is not in this repository either.
