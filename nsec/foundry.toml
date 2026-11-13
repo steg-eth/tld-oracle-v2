@@ -1,0 +1,6 @@
+[profile.default]
+src = "empty"
+test = "test"
+libs = ["node_modules"]
+optimizer = true
+via_ir = true

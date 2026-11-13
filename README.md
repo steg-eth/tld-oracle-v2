@@ -2,7 +2,7 @@
 
 <p align="center"><img src=".github/steggy-wip.gif" width="100%" alt="Steggy, the Steg mascot, holding a sign: WIP, spec coming soon"></p>
 
-*Last updated 3 November 2026.*
+*Last updated 12 November 2026.*
 
 ## Design intent
 
@@ -22,6 +22,8 @@ The permission envelope of a TLD, its [role bitmap](https://github.com/ensdomain
 Importantly, the root cannot change it later.
 
 The TSG requires the operator to "provide all relevant control guarantees … such that the alt-name cannot drift" ([TSG §4.6, p. 11](https://itp.cdn.icann.org/en/files/generic-top-level-domains-gtlds/tsg-gtld-integrations-with-alternative-naming-systems-initial-report-10-08-2026-en.pdf#page=11)). The Foundation asks for architectures "that let any party confirm the integration state directly" ([Foundation §IV](https://www.icann.org/en/public-comment/proceeding/initial-report-of-the-tsg-on-gtld-integrations-with-alternative-naming-systems-10-08-2026/submissions/ens-foundation-21-09-2026)). TLD Oracle maintains the minimum right it needs to follow DNS, nothing more. Which right that is, and who holds the TLD's token, is the first decision this repository makes. The DAO sets the policy, it doesn't change the rules.
+
+The four functions above are the admission side. A TLD can also leave the DNS root, and the Oracle reads that with the same authority. See [Release, when a TLD leaves the root](#release-when-a-tld-leaves-the-root).
 
 ## The v1 Oracle
 
@@ -73,6 +75,49 @@ The Sepolia deployment and the tests use a mock Root (`MockRoot`, `0x32cF38Af3c5
 The tests didn't find this, because the mock was written from the interface. The policy and the lifecycle are proven. The final write to the real Root isn't. The fix is one line in the interface. We didn't deploy it because we're shifting attention towards deployment on v2. 
 
 The root KSK rolled to key tag 38696 on 11 October 2026. The Sepolia verifier was re-anchored on [12 October](https://sepolia.etherscan.io/tx/0xe7dcabae6342f63c1f1c55a471ff4b291aae07bcb2f5f06b6b94fbad1c3e2394). On 13 October a [transaction](https://sepolia.etherscan.io/tx/0x89d075f3dea283e4203228399662154c3eee3ee538a0b547eae5b4ced18a85af) sent a live proof from the ENS gateway through `verifyRRSet`, and the verifier accepted it. ENS deployed its new verifier on 20 October 2026 in [ens-contracts #580](https://github.com/ensdomains/ens-contracts/pull/580). `DNSSECImpl` is at [`0x668ad446…62aa`](https://etherscan.io/address/0x668ad4467129d49ecbe6274d95197797c0e262aa). The DAO timelock owns it. It holds the same two anchors as our Sepolia verifier: key tags 20326 and 38696. The [executable](https://discuss.ens.domains/t/executable-upgrade-dnssec-oracle-and-registrar-fro-the-2026-root-ksk-rollover/22497) that authorizes the new registrar is still a draft, and it still carries `0x<TBD>` for all three addresses.
+
+## Release, when a TLD leaves the root
+
+The Oracle can prove that an operator controls a TLD. Until now it could not prove that the operator is gone. There was no release trigger, so a binding made on a DNSSEC proof had no way to end on one.
+
+The [root absence predicate](nsec/) closes that. It reads a root-signed NSEC record through the deployed DNSSEC oracle and reports whether a TLD has no NS delegation in the DNS root. The contract, its 55 tests and [the audit](nsec-audit/AUDIT.md) are in this repository.
+
+### What it means
+
+**ENS can read the absence of a name from the DNS root, on chain.** The root signs the gaps between the names it publishes. An NSEC record is a signed statement that two names are adjacent, which proves that every name between them does not exist. The DNS root publishes these records today and ENS's oracle already verifies them. [RFC 4034 §4](https://www.rfc-editor.org/rfc/rfc4034.html#section-4)
+
+**This needs no change to `ensdomains/ens-contracts`.** The oracle authenticates the record. It does not draw the conclusion, and [`DNSSECImpl.sol:15`](https://github.com/ensdomains/ens-contracts/blob/a18fdc02e06e8005b23462387e26bd6f5db4b0f4/contracts/dnssec-oracle/DNSSECImpl.sol#L15) says so. That line is about what the oracle concludes, not about what it can authenticate. The predicate is the caller that draws the conclusion.
+
+**The signal is the absence of NS, not the absence of DS.** 87 live delegations in the root have no DS record today. A predicate that reads a missing DS as termination would release working country-code TLDs. The predicate reads the NSEC type bitmap for the NS bit.
+
+### What it makes possible
+
+**A release that runs on a proof instead of a vote.** The claim path is permissionless: an operator proves control and the Oracle acts. Release had no equivalent, so ending a binding meant a DAO action. Absence in the root is evidence of the same kind as the proof that created the binding, and it can be presented by anyone.
+
+**A termination that the operator does not have to cooperate with.** The DNSKEY `REVOKE` flag is a convention an operator opts into, and a silent operator opts into nothing. A census of 1,438 TLDs on 4 November 2026 found zero observations of it. Removal from the root is not a convention. It is what ICANN asks IANA to do when a registry agreement ends, and the root publishes it whether or not the former operator does anything.
+
+**An answer to the TSG's shutdown requirement.** The TSG Initial Report §§7 to 7.1 recommends that an integration have a plan to turn itself off, and leaves the mechanism open. This covers one case inside that problem: the TLD actually leaves the DNS root. An integration can also need to stop while the DNS delegation continues, and that case is not addressed here. [TSG Initial Report, p. 22](https://itp.cdn.icann.org/en/files/generic-top-level-domains-gtlds/tsg-gtld-integrations-with-alternative-naming-systems-initial-report-10-08-2026-en.pdf#page=22)
+
+### How it fits the Oracle
+
+The Oracle's rule is that DNS is the authority, at the assignment and after it. Admission and release are the same rule read in two directions.
+
+| | Admission | Release |
+| --- | --- | --- |
+| What DNS says | this operator controls the TLD | this TLD is not in the root |
+| The record | a TXT record under the operator's name | an NSEC record signed by the root |
+| Who presents it | the operator | anyone |
+| What the Oracle does | promotes the reserved entry to the operator | reports that the binding has no basis in DNS |
+
+The Oracle does not decide who the operator is, and it does not decide when an operator is gone. DNS decides both. The predicate is the second half of that sentence.
+
+**What the predicate does not do.** It reports. It does not unregister anything, and it is not wired into the registrar. Who may act on a proof of absence, and what they may do, is the authority question, and it is open. The predicate is the evidence that question needs, and it does not answer it.
+
+### Cost and limits
+
+About 281,000 gas for one proof, and about 552,000 for two, against a deployed oracle. An absent name returns two records from the root, so a call that consumes both pays for both. Most of the cost is the oracle's verification of the root DNSKEY set.
+
+A forged closing record remains outside what the predicate can check. It would need a valid root signature over a shape the root does not publish, and it would release only names above the owner name it carries. [The audit](nsec-audit/AUDIT.md) states the bound and why no local condition closes it.
 
 ## v1 to v2
 

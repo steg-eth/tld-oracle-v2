@@ -6,6 +6,31 @@ reference/dnsprovejs/
 .DS_Store
 .claude/
 
+# NSEC absence predicate. The contracts, the tests and the pinned-source check
+# are tracked. Build output, the node_modules symlink and the vendored upstream
+# sources are not: the sources are pinned by hash in nsec/UPSTREAM-SOURCES.lock
+# and fetched from ens-contracts, so this repository does not carry a copy.
+/nsec/out/
+/nsec/cache/
+/nsec/node_modules
+/nsec/empty/
+/nsec/src/contracts/
+/nsec/output/
+/nsec/test/output/
+
+# The audit. Only the round that checks the shipped contract is tracked, with
+# the fixtures and tools needed to rerun it. The scratch copy of the code under
+# audit is not: it duplicates sources already pinned by hash. Earlier rounds and
+# their logs are kept in the private working repository.
+/nsec-audit/tree/
+/nsec-audit/output/
+/nsec-audit/REPORT.md
+/nsec-audit/TRACE.md
+/nsec-audit/inputs/Harness.sol
+/nsec-audit/inputs/RootSigned.audit.t.sol
+/nsec-audit/inputs/Synthetic.audit.t.sol
+/nsec-audit/inputs/round2/
+
 # Agent session transcripts and exports. This is a public repository: keep
 # them in the private workspace at survey/transcripts/ instead. The patterns
 # are shapes, not names, so a new transcript dropped here is ignored too.
