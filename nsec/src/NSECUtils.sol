@@ -149,10 +149,15 @@ library NSECUtils {
     ///      the bitmap, so the end of the rdata is the end of the bitmap.
     ///
     ///      This function reads every block, even after it finds the answer. A malformed block
-    ///      anywhere makes it revert. The reason is the failure mode. If a misread length byte
-    ///      made the reader skip the window that holds the NS bit, the reader would report NS as
-    ///      absent, and the caller would release a live delegation. A revert is safe. A false is
+    ///      anywhere makes it revert: an empty bitmap, a truncated one, a length byte of zero or
+    ///      above 32, or windows out of order. The reason is the failure mode. If a misread length
+    ///      byte made the reader skip the window that holds the NS bit, the reader would report NS
+    ///      as absent, and the caller would release a live delegation. A revert is safe. A false is
     ///      not.
+    ///
+    ///      A well formed block that is too short to hold the wanted bit is not malformed, and
+    ///      returns false. RFC 4034 section 4.1.2 lets a signer omit trailing zero bytes, so a bit
+    ///      beyond the block's length is a zero bit and not a missing one.
     ///
     ///      Trailing zero bytes inside a block are read as zero bits, per RFC 4034 section
     ///      4.1.2. RFC 4034 asks a signer to omit them. A root-signed record that carries one is

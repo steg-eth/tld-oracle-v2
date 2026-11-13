@@ -65,3 +65,24 @@ records from the root, so a call that consumes both pays for both.
 ## The audit
 
 `../nsec-audit/AUDIT.md`, with 58 named inputs that run against this contract.
+
+## Refusals are total
+
+An unusable proof ends the call. It is not skipped so that the others can be read. This applies to
+`ProofNotNSEC`, `ProofNotOneRecord` and `RecordNameTooDeep`, which are the three a caller can reach
+with ordinary resolver output rather than with a crafted input.
+
+The reason is not strictness for its own sake. If the contract drops part of what it was given, the
+contract and the caller no longer agree on what was evaluated. A caller can send five proofs, have
+four discarded, and act on the one that remains without knowing. For a release decision that is the
+wrong failure: a wrong "not proven" costs a retry, and a wrong "proven" releases a live delegation.
+
+There is a precedent in the oracle this contract reads.
+[ens-contracts #583](https://github.com/ensdomains/ens-contracts/pull/583) made `computeRecordHash`
+order independent with an XOR, which cancels a duplicate record, so `[b, b, a]` and `[a]` hashed
+alike while `getOwnerAddress` read a different owner from each. The fix,
+[`44b93cf`](https://github.com/ensdomains/ens-contracts/commit/44b93cf23d), replaced the XOR with a
+fold. Tolerating a shape that the signature already fixed is what caused it.
+
+The usability objection is answered by the errors rather than by silence. Each one carries the index
+of the proof that failed, so a caller is told which element to remove.
