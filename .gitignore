@@ -38,3 +38,6 @@ reference/dnsprovejs/
 *session*.txt
 *transcript*
 /*.txt
+
+# The contracts-v2 clone the role tests run inside, fetched on demand.
+/role-test/cv2/
