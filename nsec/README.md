@@ -62,6 +62,15 @@ About 281,000 gas for one proof against a deployed oracle, and about 552,000 for
 the oracle's own verification of the root DNSKEY set, which is RSA work. An absent name needs two
 records from the root, so a call that consumes both pays for both.
 
+A **renewal** proof is a different chain and costs more: about 396,000 gas for a TLD signing with
+algorithm 13, and about 530,000 for one signing with algorithm 8. `RENEWAL-GAS.md` has the per-level
+measurements and the method.
+
+Both figures above move with EIP-7883, which reprices `modexp` and therefore RSA. The presence
+measurement found the same four-set prefix costing 420,652 gas pre-Osaka and 513,240 on Osaka. The two
+absence figures in this section were not re-measured under `--evm-version osaka` and are low by roughly
+that margin.
+
 ## The audit
 
 `../nsec-audit/AUDIT.md`, with 58 named inputs that run against this contract.
