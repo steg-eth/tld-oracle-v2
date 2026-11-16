@@ -1,8 +1,8 @@
 # TLD Oracle v2
 
-<p align="center"><img src=".github/steggy-wip.gif" width="100%" alt="Steggy, the Steg mascot, holding a sign: WIP, spec coming soon"></p>
+![Steggy, the Steg mascot, holding a sign: WIP, spec coming soon](.github/steggy-wip.gif)
 
-*Last updated 12 November 2026.*
+*Last updated 16 November 2026.*
 
 ## Design intent
 
@@ -86,7 +86,7 @@ The [root absence predicate](nsec/) closes that. It reads a root-signed NSEC rec
 
 **ENS can read the absence of a name from the DNS root, on chain.** The root signs the gaps between the names it publishes. An NSEC record is a signed statement that two names are adjacent, which proves that every name between them does not exist. The DNS root publishes these records today and ENS's oracle already verifies them. [RFC 4034 §4](https://www.rfc-editor.org/rfc/rfc4034.html#section-4)
 
-**This needs no change to `ensdomains/ens-contracts`.** The oracle authenticates the record. It does not draw the conclusion, and [`DNSSECImpl.sol:15`](https://github.com/ensdomains/ens-contracts/blob/a18fdc02e06e8005b23462387e26bd6f5db4b0f4/contracts/dnssec-oracle/DNSSECImpl.sol#L15) says so. That line is about what the oracle concludes, not about what it can authenticate. The predicate is the caller that draws the conclusion.
+**This needs no change to** `ensdomains/ens-contracts`**.** The oracle authenticates the record. It does not draw the conclusion, and [`DNSSECImpl.sol:15`](https://github.com/ensdomains/ens-contracts/blob/a18fdc02e06e8005b23462387e26bd6f5db4b0f4/contracts/dnssec-oracle/DNSSECImpl.sol#L15) says so. That line is about what the oracle concludes, not about what it can authenticate. The predicate is the caller that draws the conclusion.
 
 **The signal is the absence of NS, not the absence of DS.** 87 live delegations in the root have no DS record today. A predicate that reads a missing DS as termination would release working country-code TLDs. The predicate reads the NSEC type bitmap for the NS bit.
 
@@ -121,7 +121,6 @@ A forged closing record remains outside what the predicate can check. It would n
 
 ## v1 to v2
 
-
 |                            | v1 (as posted)                                                                                          | v2 (this repository)                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | -------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Target                     | ENS Root. `setSubnodeOwner` as a Root controller.                                                       | ENSv2 root registry. `register` promotes the reserved TLD entry.                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -137,9 +136,6 @@ A forged closing record remains outside what the predicate can check. It would n
 | Policy                     | 7-day timelock. 10 assignments per 7 days. 14-day proof age. Pause. Security Council veto.              | Carried over. The Security Council mandate is to be re-verified.                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `.eth`                     | `Root.locked["eth"]`. | The `eth` entry is already registered in the ENSv2 root, so the Oracle cannot promote it: `register` reverts with `LabelAlreadyRegistered`. The [phase-8 handover](https://github.com/ensdomains/contracts-v2/blob/5079ac1cba2635bce8840bb43645105c20a5cbc5/contracts/docs/migration.md#phase-8-hand-the-registries-over) has run. The `eth` entry reads REGISTERED to the name-owner Safe [`0x5B71…A2F3`](https://etherscan.io/address/0x5B716D6587d241166bC8914858640F8684F3A2F3). |
 | Timing                     | One 9-day governance cycle. | Both prerequisites are done. The activation proposal executed, and [#465](https://github.com/ensdomains/contracts-v2/pull/465) merged on 28 October 2026 with the phase-8 handover that gave the DAO the root roles. [#486](https://github.com/ensdomains/contracts-v2/pull/486) merged on 3 November 2026. The sweep itself still needs a DAO executable to grant the registrar its root roles and the Safe's approval, so the TLDs are not swept yet. Whether the Oracle asks for `REGISTER_RESERVED` or for a handoff out of the Safe depends on whether the sweep reaches the TLD first. |
-
-
-
 
 ## Provenance
 
