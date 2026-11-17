@@ -9,15 +9,21 @@ import {Cheats} from "./Cheats.sol";
 
 /// Not a test file. Shared real, root-signed NSEC fixtures for the predicate's own suite.
 ///
-/// All bytes below are root-signed data read from root server 198.41.0.4 on 11 November 2026,
+/// All bytes below are root-signed data read from root server 198.41.0.4 on 17 November 2026,
 /// encoded into ENS SignedSet form, exactly as carried in `tools/nsec/*.t.sol` (which measure the
 /// *upstream oracle*, not this predicate). Reusing the same signed fixtures here is reuse of DNS
 /// data, not reuse of that suite: every test built on top of these constants exercises
 /// `RootAbsencePredicate`, not `DNSSECImpl` in isolation.
 ///
-/// RRSIGs on the NSEC fixtures are valid 2026-11-11 04:00:00Z to 2026-11-24 05:00:00Z. `AT` sits
-/// inside that window. After 24 November 2026 these tests fail on signature expiry, which looks
-/// exactly like a defect in the predicate and is not one.
+/// **These fixtures expire. RRSIGs on the NSEC sets are valid 2026-11-17 19:00:00Z to
+/// 2026-11-30 20:00:00Z, and `AT` sits inside that window. After 30 November 2026 every test built
+/// on them fails on signature expiry, which looks exactly like a defect in the predicate and is
+/// not one.** The root re-signs on a rolling schedule, so a refresh buys roughly two weeks and
+/// then this comment is the only thing that tells the next reader what happened.
+///
+/// To refresh: run `python3 tools/mkfixture.py`, replace the four NSEC set and signature pairs
+/// below, and set `AT`, `INSIDE`, `AFTER_NSEC_EXPIRY` and `BEFORE_NSEC_INCEPTION` from the new
+/// window. Last refreshed 17 November 2026.
 ///
 /// Every `RootAbsencePredicate` entry point now validates at `block.timestamp` rather than a
 /// caller-supplied `at` (the predicate's fix for F1, the stale-proof replay). `AT` and the window
@@ -25,7 +31,7 @@ import {Cheats} from "./Cheats.sol";
 /// `_acceptsAt` is the one exception, since it drives `DNSSECImpl.verifyRRSetAt` directly, and
 /// that function keeps its own explicit time argument.
 abstract contract RootFixtures is Cheats {
-    uint256 internal constant AT = 1794415402; // 2026-11-11 16:43:22Z, inside every NSEC window below
+    uint256 internal constant AT = 1795505400; // 2026-11-11 16:43:22Z, inside every NSEC window below
 
     bytes internal constant ANCHORS =
         hex"00002b000100000e1000244f660802e06d44b80b8f1d39a95c0b0d7c65d08458e880409bbc683457104237c7f8ec8d00002b000100000e10002497280802683d2d0acb8c9b712a1948b27f741219298d0a450d612c483af444a4c0fb2b16";
@@ -36,39 +42,39 @@ abstract contract RootFixtures is Cheats {
 
     // zw. NSEC .  -- the last delegation in the zone; next-owner is the root. Closes the zone.
     bytes internal constant WRAP_SET =
-        hex"002f0801000151806b0519d06af3e840223b00027a7700002f0001000151800009000006200000000003";
+        hex"002f0801000151806b0dd5c06afca430223b00027a7700002f0001000151800009000006200000000003";
     bytes internal constant WRAP_SIG =
-        hex"a72a1b3af0107414aa4b218e0963dd762a7a0b48eba87b74efb9b56ff9a1af1282990750e95660cfaabbf8a093e777f981225507e9c8c574d212e3bf2978662d548124529a8adb533a7d90a20c09d66ec9386030a574a53000a749ee497a7db35b06430330586fef025bfbf5022e3ed1e4f2c1af706b065ed50ed3d2e13d085b7642fe36695f6c12c05f15c9fc9d759dba2a6c35dffc963458bda85f5e685ae2ce909307a85d01f52771a2f8557a365825cf6a9168445cbb083c10fdda5d327119a17f3dae551ddc01631fd326b889028dca0345d379b122e7fd2a10ce5577f546046cda1a33966ae7943643539b348cb1149aeb8f7ea64fc0a6c00d107fc339";
+        hex"3363004eb8ccac9a3429fc9b44ec50b15ccd0230c68fe6de0453a7fe3b87ab9be315f2988c91c9b3b98379395ae403ce7333c2705367236a1cbbac3dcb85fb585c35ab9739a3fe715998c5ec193cb6b0e809591585df096eaa7556b722dc019e8e39944e985aa5413809d52aace533ae4b0d4fc2abe8a43cb28bac7918fec63704a9d1e9458430ad9fefed547ff92805227ab43f0969084962d2290b1abb66f5f567526bc5a0336174ace9cec82988aa42ed511c0ace38df92252b10229919fe956a75d36fff2c029367192dbebdac13e52fbf6a05e44651c297f323a0f50185a60d5f177716a304801239a88d8e6a7a84ed4242003fc528b4b5ad4198d8fed9";
 
     /// WRAP_SET with one byte flipped inside the type bitmap (the fifth of the six bitmap data
     /// bytes, 0x00 -> 0x01). A different byte, and a different region, from the negative control
     /// in `tools/nsec/NegativeControl.t.sol`, which corrupts the next-owner name instead. Signed
     /// over by the same (now-mismatched) WRAP_SIG, so the oracle's signature check must catch it.
     bytes internal constant WRAP_SET_CORRUPT =
-        hex"002f0801000151806b0519d06af3e840223b00027a7700002f0001000151800009000006200000000103";
+        hex"002f0801000151806b0dd5c06afca430223b00027a7700002f0001000151800009000006200000000103";
 
     // aq. NSEC aquarelle.  -- a live ccTLD delegated with no DS
     bytes internal constant AQ_SET =
-        hex"002f0801000151806b0519d06af3e840223b0002617100002f0001000151800013096171756172656c6c65000006200000000003";
+        hex"002f0801000151806b0dd5c06afca430223b0002617100002f0001000151800013096171756172656c6c65000006200000000003";
     bytes internal constant AQ_SIG =
-        hex"a481acaded14f08b097514fc32974c336de12c514a82ebeb202aab08efe57aa22b052f3ae1321545f1ac6777d4075ca16daea179669cec3bba6be3956846b0a29740fa176693b0f8cf6cc8304d4587fe8c53ddaeb9c122b299a8199dddcbcc07620487aa49ecb1217a99a068f9e6ee05c883355ade4df2490082867f7c2a889f164fb0bc5db63aa4fe7d5f44d50be09e795949e246963f68b2d8f0f04492ca47af66f242dc0ac30b3dde4061b55af885660c2b8d2562f3f3db3456f55b3d32b97f2cfc7818040902d48a219bc262212cea4a16a504f7de58cac7a974ad6b15f21b7f0f9cbc532c41df88181bbb9c6edb6232aa79255f0cd1fb6b433c4027a235";
+        hex"747b7b632145aae680c674aadf0e25d1f672e55ec637aa5e6f5c0caa4c4cd3e781de1fb96b16925c6126dc13d167fb54f89e2b7db496696b26d59ec5e0c75527659b4cca67cbc4913cf0003ac4fae3d02e130582571227cac36901e326f15cb928e2c89b0f4c5d3d885a88524f6d140810ce1625400a19f9d9642c1a3cdc5f12286d3f80496c3676d7c315d3968472f05e3aaafb316decf14347d1684d87d63508eae82289545f6636babea5920f264c36e94afd271895805ddaf109bc1cc296ebcb651f31ce5368e1d42458ae50b91371e09ae3f25ded1409644f800f1e034e8dad41addd2030734d9285d45497fb1a24959558a6deeed867c825a3a5d0b974";
 
     // domains. NSEC dot.  -- an ordinary gap; doosan. (the removed TLD) falls inside it
     bytes internal constant DOMAINS_SET =
-        hex"002f0801000151806b0519d06af3e840223b0007646f6d61696e7300002f000100015180000d03646f74000006200000000013";
+        hex"002f0801000151806b0dd5c06afca430223b0007646f6d61696e7300002f000100015180000d03646f74000006200000000013";
     bytes internal constant DOMAINS_SIG =
-        hex"179ad535badee5ed9ca4428f87e3424f19f7a1aef177dc17afcc28332f1f4ce2316d2e0ebf460164cc59445e410d8c7a367f4f3d918d4bc666ab9e3318db168f31112e5382bac35fa844d56142be975de37da0a6dabe4d2a8806646a101873378e943ab2ca4924a6feeb046107e4aef1a65defecd4764599e2f455bc376f0dddb3409111aee3fbb19cf9b46e2dfdb01e208500dcaffb8f05efed7bd89636c3e2924f4d39d708c4db71ebb4dc7b6747d6f59a3e9983f4309639075e3cf2d029a5814d80c254b8601517cee8cb10fccd09c63fc1a1e0a65cf20602cf3fa40cdc077716ba8889be73335a7f1936d55d1c2471156ace53c8e4215ebcc694b4f2c5df";
+        hex"a7223171c0bdb7e98add3bf6e1ad6fca0fae9b5a341f99a09eba37ead97db9b30e88c26ff90f476ccf2ace8a5cf42a906fcc3cf19a25d5c09d1364fb76e05b5b04eb85cf7ca15e551476ecb177796f3186c2c7ebdb6f1c42c12d23716694b3211d8cae7041acda75492914b11c864b2402542df19296256e463f39c664b5e884d406c147ea4f7e7dab807c2562cbaed9980224862e299dee49e1aa1bbd1314c3cc1319c2b25610cba6a091e21171f52d5840080a21c2a2f355b8325a68f1783a65d256e442889c0c1f8233a036eb0e4d8a94d578ca20b4a01632921c5a4488b01793d23e1815b388628ad8e475fb1e638a9602e07c2bcd9f27405cda80da8711";
 
     // . NSEC aaa.  -- the root's own record, denying a wildcard at the apex
     bytes internal constant ROOT_SET =
-        hex"002f0800000151806b0519d06af3e840223b0000002f000100015180000f036161610000082200000000038001";
+        hex"002f0800000151806b0dd5c06afca430223b0000002f000100015180000f036161610000082200000000038001";
     bytes internal constant ROOT_SIG =
-        hex"85e00e74699807d72c119d7eb626c21959da660798ff47d29c7430d1018a44d1c60b419a99f3f5edd7379722c552f9705d4f9216b050f511ffcd3bc23af6854e5266b42d540e60be47f81af1048462ff3f40a36411e82a6419af1c41fb527ee03faafa5f7e3b03531de4efa732ce339354942b3b05176d70fd7bd92d2dcc91a6f7b0315817daf1bd85f22e9617ea8a36a96556ead86e2908ec4e058eac6aae6c4d7252f64f0ee7e7b64313e3a4687780fcaaae486406e4d622ce2d9ce18418ce2ccb334a33a34534721ed7641d0832e8623d1171ec5a52aa712ccb6861fab306a2e5659e3dc6f2be0070c23ae18e946c610c3ab4f82285ae135f2f2a442ed9a2";
+        hex"91ddd189bb9b0200a113efccb1e4b5fa8f9fd4160b7eb02a4f790c838b16f3b9b4b9c3b3b7f8d6e0f51ea921a5b1cd00bdf8f46c1ccd16d3e52571610c7128972f7fa10770f9c53f9a480e2a0447d57122a02af7337ac4e989040bfb28538f184cb68d10d1d2b2729ce3960ce6d8f17b3adbdd16058376eb13ec12c6429f4d8a473cda6226211b0290a1f57fa52a4dd21b944ac56912b5bcbd2181f73918de20d6e6f8c1a19192d22d77a68e3a150afc0fccaed8c8d585a629a414ea8ea0eb28580dc3e4f361b752ca8efcf414aaa9e354ee02eacabb628b14eda2b8c893f1679158343c28e7530e96da273c416d47b3d9a5fe8662e285c4ee9f63c4c26b282b";
 
     // Signature validity window, from WindowAndMultiNsec.t.sol's upstream measurement.
-    uint256 internal constant INSIDE = 1794415402; // 2026-11-11 16:43:22Z
-    uint256 internal constant AFTER_NSEC_EXPIRY = 1795496401; // NSEC expiration + 1s
-    uint256 internal constant BEFORE_NSEC_INCEPTION = 1794369599; // NSEC inception - 1s
+    uint256 internal constant INSIDE = 1795505400; // 2026-11-11 16:43:22Z
+    uint256 internal constant AFTER_NSEC_EXPIRY = 1796068801; // NSEC expiration + 1s
+    uint256 internal constant BEFORE_NSEC_INCEPTION = 1794941999; // NSEC inception - 1s
 
     // Wire-format query names used across the suite.
     bytes internal constant NAME_DOOSAN = hex"06646f6f73616e00"; // doosan.
