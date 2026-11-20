@@ -44,3 +44,11 @@ reference/dnsprovejs/
 
 # Python bytecode from the fixture tools
 __pycache__/
+
+# RSASHA512, DNSSEC algorithm 10. Same rule as nsec/ above: the contracts, the tests, the audit
+# and the port layout are tracked. Build output and the vendored upstream sources are not. The
+# vendored tree is a copy of ens-contracts; the patched RSAPKCS1Verify.sol that this work changes
+# is carried in alg10/port/, which is the copy the pull request uses.
+/alg10/out/
+/alg10/cache/
+/alg10/src/contracts/

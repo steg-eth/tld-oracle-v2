@@ -1,0 +1,9 @@
+[profile.default]
+src = "src"
+libs = ["../nsec/node_modules"]
+test = "test"
+optimizer = true
+via_ir = true
+# Same reason as nsec/foundry.toml: mainnet has EIP-7951 and EIP-7883, and ModExp pricing is
+# most of the cost of an RSA verification. Measure at the version mainnet runs.
+evm_version = "osaka"
