@@ -117,7 +117,9 @@ The Oracle does not decide who the operator is, and it does not decide when an o
 
 ### Cost and limits
 
-About 281,000 gas for one proof, and about 552,000 for two, against a deployed oracle. An absent name returns two records from the root, so a call that consumes both pays for both. Most of the cost is the oracle's verification of the root DNSKEY set.
+About 339,000 gas for one proof, and about 667,000 for two. An absent name returns two records from the root, so a call that consumes both pays for both. Most of the cost is the oracle's verification of the root DNSKEY set.
+
+**These figures are measured at the EVM version mainnet runs, and they replace lower ones.** The suite previously measured about 281,000 and 552,000. Mainnet has EIP-7951, the P-256 precompile at `0x100`, confirmed on 20 November 2026 by calling it with a valid signature and reading back `1`. The same fork reprices ModExp under EIP-7883, and ModExp is most of the cost of every RSA chain here, so every figure measured below that version understates mainnet by roughly 17%. `foundry.toml` now pins `evm_version = "osaka"` so the suite cannot drift back.
 
 A forged closing record remains outside what the predicate can check. It would need a valid root signature over a shape the root does not publish, and it would release only names above the owner name it carries. [The audit](nsec-audit/AUDIT.md) states the bound and why no local condition closes it.
 

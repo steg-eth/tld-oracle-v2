@@ -29,6 +29,17 @@ pragma solidity ^0.8.25;
 /// signature validity on `estmcmxci.co`, which the author controls as the zone operator.
 /// Last refreshed 17 November 2026.
 ///
+/// **This file needs a fork and an EVM version that has the P-256 precompile.** It calls the
+/// deployed oracle, so without `--fork-url` there is no code at that address. And sets 5 and 6 are
+/// algorithm 13, which `P256Precompile` verifies by `staticcall` to `0x100`, EIP-7951. A call to
+/// an address with no code succeeds and returns nothing, so on an EVM version below `osaka` the
+/// verification silently reports invalid and the chain fails at `estmcmxci.co` with
+/// `NoMatchingProof`. That looks like a defect in the fixture and is not one.
+///
+/// `setUp` skips this contract when no fork is present, so a clone of the repository runs green.
+///
+/// `foundry.toml` pins `evm_version = "osaka"`, so only the fork flag is needed here.
+///
 /// Run: forge test --match-path test/PresenceGas.t.sol --fork-url <mainnet> -vv
 
 interface IDNSSEC {
@@ -42,6 +53,8 @@ interface IDNSSEC {
         view
         returns (bytes memory rrs, uint32 inception);
 }
+
+import {Cheats} from "./Cheats.sol";
 
 /// No forge-std in this project (`foundry.toml` sets `src = "empty"`), so the console sink is
 /// declared here at its well-known address, in the same style as `Cheats.sol` declares `Vm`.
@@ -80,7 +93,12 @@ abstract contract Console {
     }
 }
 
-contract PresenceGasTest is Console {
+contract PresenceGasTest is Console, Cheats {
+    /// @dev Inside the TXT RRSIG's validity window, 2026-11-16T21:30:16Z to 2026-11-18T23:30:16Z,
+    ///      read from the signature in `rrsets[5]`. `setUp` warps here so that the chain's expiry
+    ///      no longer fails this file. Refreshing the chain means moving this with it.
+    uint256 internal constant VERIFY_AT = 1794954616;
+
     IDNSSEC internal constant ORACLE = IDNSSEC(0x668ad4467129d49ECbe6274d95197797C0E262AA);
 
     bytes[6] internal rrsets;
@@ -107,6 +125,17 @@ contract PresenceGasTest is Console {
         sigs[4]   = hex"0b90354fde8764939d5bfecc5f0bee00b53c5cc96ea7ff6f4c01820fc224f15e112d0d9f22f94c345c5302587537ce5ac7ac05aca856b73da26ee1e6a1f35a18";
         rrsets[5] = hex"00100d030000003c6afe35086afb75e886c9096573746d636d78636902636f00045f656e73096573746d636d78636902636f00001000010000003c002d2c613d307837303361653033664231323065433931653945643664303843653830343445343938434337383942045f656e73096573746d636d78636902636f00001000010000003c004f4e706f6c6963795f686173683d307835636436356663353032383137306136626632326235323835636333313263356236376332303239316232393161376266363332643662626136336531326536045f656e73096573746d636d78636902636f00001000010000003c007574706f6c6963793d68747470733a2f2f7261772e67697468756275736572636f6e74656e742e636f6d2f737465672d6574682f67746c642d706f6c6963792d617263686976652f6d61737465722f66697874757265732f73706563696d656e2d6465707265636174696f6e2d706f6c6963792e6d64";
         sigs[5]   = hex"ec81d395257a42a9f12b3eb231e5ef6161b28ce61d88937351688e280320edc8abefd96134181dc5d1649a2f939c6d0b39684e2770c79d6839c5afe58780d37b";
+
+        // This file measures the deployed oracle, so it needs `--fork-url`. Without one there is
+        // no code at that address and every call reverts, which reads as a defect in the chain.
+        // Skip instead, so a clone runs green.
+        if (address(ORACLE).code.length == 0) {
+            vm.skip(true);
+            return;
+        }
+        // Pin verification inside the TXT RRSIG window. Without this the file fails on signature
+        // expiry from 18 November 2026, and that failure also reads as a defect.
+        vm.warp(VERIFY_AT);
     }
 
     function _prefix(uint256 n) internal view returns (IDNSSEC.RRSetWithSignature[] memory input) {

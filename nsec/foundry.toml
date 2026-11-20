@@ -4,3 +4,10 @@ test = "test"
 libs = ["node_modules"]
 optimizer = true
 via_ir = true
+# Mainnet has EIP-7951, the P-256 precompile at 0x100: a valid signature returns 1 there today,
+# and an unimplemented precompile would be an empty account instead. Measured 20 November 2026.
+# Pin the matching EVM version, because the default is below it and that changes two things.
+# Algorithm 13 cannot verify at all, since `staticcall` to an empty account succeeds and returns
+# nothing, which reads as an invalid signature. And EIP-7883 reprices ModExp, which is most of the
+# cost of every RSA chain here, so gas measured below this version understates mainnet by ~17%.
+evm_version = "osaka"
